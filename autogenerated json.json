@@ -1,0 +1,103 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2014-04-01-preview/deploymentTemplate.json#",
+    "contentVersion": "0.9.0.0",
+    "parameters": {
+        "clusterName": {
+            "type": "String",
+            "metadata": {
+                "description": "The name of the HDInsight cluster to create."
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.HDInsight/clusters",
+            "name": "jorcluster",
+            "apiVersion": "2015-03-01-preview",
+            "location": "eastus",
+            "properties": {
+                "clusterVersion": "3.5",
+                "osType": "Linux",
+                "tier": "standard",
+                "clusterDefinition": {
+                    "kind": "spark",
+                    "componentVersion": {
+                        "Spark": "1.6"
+                    },
+                    "configurations": {
+                        "gateway": {
+                            "restAuthCredential.isEnabled": true,
+                            "restAuthCredential.username": "admin",
+                            "restAuthCredential.password": "Passw0rds!!"
+                        },
+                        "core-site": {
+                            "fs.defaultFS": "wasb://jorcluster@jorgeclusterh2oai.blob.core.windows.net",
+                            "fs.azure.account.key.jorgeclusterh2oai.blob.core.windows.net": "BQ/1EDAQHhDjh+6ZbcYF492OSZx67i9JIOCCgcMEDmwn6UKwMFB0aV3RDRWJfzU634+U0VieKVUrhC1oIZW+Qg=="
+                        }
+                    }
+                },
+                "computeProfile": {
+                    "roles": [
+                        {
+                            "name": "headnode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 2,
+                            "hardwareProfile": {
+                                "vmSize": "Standard_D12_V2"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "jorge",
+                                    "password": "Passw0rds!!"
+                                }
+                            },
+                            "scriptActions": [ ]
+                        },
+                        {
+                            "name": "workernode",
+                            "minInstanceCount": 1,
+                            "targetInstanceCount": 2,
+                            "hardwareProfile": {
+                                "vmSize": "Standard_D4_V2"
+                            },
+                            "osProfile": {
+                                "linuxOperatingSystemProfile": {
+                                    "username": "jorge",
+                                    "password": "Passw0rds!!"
+                                }
+                            },
+                            "scriptActions": [ ]
+                        }
+                    ]
+                }
+            },
+            "dependsOn": [ ]
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "name": "h2o-sparklingwater-previewh2o-sparkingwater_2017-01-02T16.59",
+            "apiVersion": "2015-01-01",
+            "properties": {
+                "mode": "incremental",
+                "templateLink": {
+                    "uri": "https://gallery.azure.com/artifact/20161101/h2o-ai.h2o-sparklingwater-previewh2o-sparkingwater.1.0.16/Artifacts/mainTemplate.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "clusterName": {
+                        "value": "[parameters('clusterName')]"
+                    },
+                    "galleryPackageIdentity": {
+                        "value": "h2o-ai.h2o-sparklingwater-previewh2o-sparkingwater.1.0.16"
+                    },
+                    "edgeNodeSize": {
+                        "value": "Standard_D3"
+                    }
+                }
+            },
+            "dependsOn": [
+                "Microsoft.HDInsight/clusters/jorcluster"
+            ]
+        }
+    ]
+}
