@@ -58,8 +58,8 @@ hdfs dfs -put -f /home/h2o/sparkling-water-${version}.${h2oBuild}/py/dist/*.egg 
 hdfs dfs -put -f /home/h2o/sparkling-water-${version2}.${h2oBuild2}/py/build/dist/*.egg /H2O-Sparkling-Water-eggsfiles/
 
 echo "Copying Notebook Examples to default Storage account Jupyter home folder ... "
-curl --silent -o 4_sentiment_sparkling.ipynb  "https://raw.githubusercontent.com/pablomarin/H2O-SparklingWater-azure-templates/master/Notebooks/4_sentiment_sparkling.ipynb"
-curl --silent -o ChicagoCrimeDemo.ipynb  "https://raw.githubusercontent.com/pablomarin/H2O-SparklingWater-azure-templates/master/Notebooks/ChicagoCrimeDemo.ipynb"
+curl --silent -o 4_sentiment_sparkling.ipynb  "https://raw.githubusercontent.com/JHerna17/H2O-Azure-Templates/master/Notebooks/4_sentiment_sparkling.ipynb"
+curl --silent -o ChicagoCrimeDemo.ipynb  "https://raw.githubusercontent.com/JHerna17/H2O-Azure-Templates/master/Notebooks/ChicagoCrimeDemo.ipynb"
 hdfs dfs -mkdir -p "/HdiNotebooks/H2O-PySparkling-Examples"
 hdfs dfs -put -f *.ipynb /HdiNotebooks/H2O-PySparkling-Examples/
 
