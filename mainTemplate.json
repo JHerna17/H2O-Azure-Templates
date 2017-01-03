@@ -167,7 +167,7 @@
                 "installScriptActions": [
                     {
                         "name": "[concat('head-install-v0','-' ,uniquestring('h2o-sparklingwater'))]",
-                        "uri": "https://raw.githubusercontent.com/pablomarin/SparklingWater-azure-template/master/headnode_installs.sh",
+                        "uri": "https://raw.githubusercontent.com/JHerna17/H2O-Azure-Templates/master/head_node_install.sh",
                         "parameters": "[concat(parameters('sshUserName'), ' ', parameters('sparkVersion'))]",
                         "roles": [ "headnode" ]
                     },

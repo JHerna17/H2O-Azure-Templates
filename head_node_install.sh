@@ -2,10 +2,11 @@
 # ARGS: $1=username $2=SparkVersion
 set -e
 
-user=$USER
+echo " Making h2o folder"
 
-echo "Changing to user folder ..."
-cd /home/user/
+mkdir /home/h2o
+echo "Changing to h2o folder ..."
+cd /home/h2o/
 wait 
 
 #Libraries needed on the worker roles in order to get pysparkling working
@@ -44,12 +45,12 @@ unzip -o sparkling-water-${version}.${h2oBuild}.zip 1> /dev/null &
 wait
 
 echo "Creating SPARKLING_HOME env ..."
-export SPARKLING_HOME="/home/user/sparkling-water-${version}.${h2oBuild}"
+export SPARKLING_HOME="/home/h2o/sparkling-water-${version}.${h2oBuild}"
 export MASTER="yarn-client"
 
 echo "Copying Sparkling folder to default storage account ... "
 hdfs dfs -mkdir -p "/H2O-Sparkling-Water"
-hdfs dfs -put -f /home/user/sparkling-water-${version}.${h2oBuild}/* /H2O-Sparkling-Water/
+hdfs dfs -put -f /home/h2o/sparkling-water-${version}.${h2oBuild}/* /H2O-Sparkling-Water/
 
 echo "Copying Notebook Examples to default Storage account Jupyter home folder ... "
 curl --silent -o 4_sentiment_sparkling.ipynb  "https://raw.githubusercontent.com/pablomarin/H2O-SparklingWater-azure-templates/master/Notebooks/4_sentiment_sparkling.ipynb"
