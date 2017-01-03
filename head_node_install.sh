@@ -54,7 +54,7 @@ export MASTER="yarn-client"
 
 echo "Copying Sparkling folder to default storage account ... "
 hdfs dfs -mkdir -p "/H2O-Sparkling-Water-eggsfiles"
-hdfs dfs -put -f /home/h2o/sparkling-water-${version}.${h2oBuild}/py/build/dist/*.egg /H2O-Sparkling-Water-eggsfiles/
+hdfs dfs -put -f /home/h2o/sparkling-water-${version}.${h2oBuild}/py/dist/*.egg /H2O-Sparkling-Water-eggsfiles/
 hdfs dfs -put -f /home/h2o/sparkling-water-${version2}.${h2oBuild2}/py/build/dist/*.egg /H2O-Sparkling-Water-eggsfiles/
 
 echo "Copying Notebook Examples to default Storage account Jupyter home folder ... "
