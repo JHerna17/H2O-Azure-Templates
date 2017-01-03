@@ -20,7 +20,10 @@ wait
 
 # Adjust based on the build of H2O you want to download.
 
-if [ "$SPARK_MAJOR_VERSION" = "2" ]
+echo "Spark Major Version:"
+echo $SPARK_MAJOR_VERSION
+
+if [ "$SPARK_MAJOR_VERSION" -eq "2" ]
 then
     echo "Spark is 2.0 "
 	version=2.0
