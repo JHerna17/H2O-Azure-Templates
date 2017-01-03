@@ -20,6 +20,7 @@ wait
 
 # Adjust based on the build of H2O you want to download.
 
+echo printenv
 echo "Spark Major Version:"
 echo $SPARK_MAJOR_VERSION
 
