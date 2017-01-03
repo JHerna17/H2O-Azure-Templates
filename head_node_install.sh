@@ -4,7 +4,7 @@ set -e
 
 echo " Making h2o folder"
 
-mkdir /home/h2o
+mkdir -p /home/h2o
 echo "Changing to h2o folder ..."
 cd /home/h2o/
 wait 
