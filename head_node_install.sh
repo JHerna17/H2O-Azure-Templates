@@ -48,6 +48,11 @@ wait
 unzip -o sparkling-water-${version2}.${h2oBuild2}.zip 1> /dev/null &
 wait
 
+echo "Rename Egg files"
+mv /home/h2o/sparkling-water-${version}.${h2oBuild}/py/dist/*.egg /home/h2o/sparkling-water-${version}.${h2oBuild}/py/dist/pySparkling-${version}.egg
+
+mv /home/h2o/sparkling-water-${version2}.${h2oBuild}/py/dist/*.egg /home/h2o/sparkling-water-${version2}.${h2oBuild}/py/dist/pySparkling-${version2}.egg
+
 echo "Creating SPARKLING_HOME env ..."
 export SPARKLING_HOME="/home/h2o/sparkling-water-${version}.${h2oBuild}"
 export MASTER="yarn-client"
