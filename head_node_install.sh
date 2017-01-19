@@ -51,7 +51,7 @@ wait
 echo "Rename Egg files"
 mv /home/h2o/sparkling-water-${version}.${h2oBuild}/py/dist/*.egg /home/h2o/sparkling-water-${version}.${h2oBuild}/py/dist/pySparkling-${version}.egg
 
-mv /home/h2o/sparkling-water-${version2}.${h2oBuild2}/py/dist/*.egg /home/h2o/sparkling-water-${version2}.${h2oBuild2}/py/dist/pySparkling-${version2}.egg
+mv /home/h2o/sparkling-water-${version2}.${h2oBuild2}/py/build/dist/*.egg /home/h2o/sparkling-water-${version2}.${h2oBuild2}/py/build/dist/pySparkling-${version2}.egg
 
 echo "Creating SPARKLING_HOME env ..."
 export SPARKLING_HOME="/home/h2o/sparkling-water-${version}.${h2oBuild}"
