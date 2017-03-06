@@ -1,194 +1,284 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.1",
     "parameters": {
-        "clusterName": {
+        "adminUsername": {
             "type": "string",
             "metadata": {
-                "description": "The name of the HDInsight cluster to create."
+                "description": "Admin username"
             }
         },
-        "clusterLoginUserName": {
-            "type": "string",
-            "defaultValue": "hdiadmin",
+        "adminPassword": {
+            "type": "securestring",
             "metadata": {
-                "description": "These credentials can be used to submit jobs to the cluster and to log into cluster dashboards."
-            }
-        },        
-        "sshUserName": {
-            "type": "string",
-            "defaultValue": "sshuser",
-            "metadata": {
-                "description": "These credentials can be used to remotely access the cluster."
+                "description": "Admin password"
             }
         },        
-        "sparkVersion": {
+        "vmSize": {
             "type": "string",
-            "metadata": {
-                "description": "The Spark version to be installed on the cluster."
-            },
             "allowedValues": [
-                "1.6",
-                "2.0"
-            ],
-            "defaultValue": "2.0"
-        },
-        "location": {
-            "type": "string",
-            "defaultValue": "East US",
-            "allowedValues": [
-                "East US",
-                "East US 2",
-                "North Central US",
-                "South Central US",
-                "West US",
-                "North Europe",
-                "West Europe",
-                "East Asia",
-                "Southeast Asia",
-                "Japan East",
-                "Japan West",
-                "Australia East",
-                "Australia Southeast"
+                "Standard_DS1_v2",
+                "Standard_DS2_v2",
+                "Standard_DS3_v2",
+                "Standard_DS4_v2",
+                "Standard_DS5_v2",
+                "Standard_DS11_v2",
+                "Standard_DS12_v2",
+                "Standard_DS13_v2",
+                "Standard_DS14_v2"
             ],
             "metadata": {
-                "description": "The location where all azure resources will be deployed."
+                "description": "Size of the VM"
             }
         },
-        "clusterType": {
-            "type": "string",
-            "defaultValue": "spark",
-            "allowedValues": [
-                "spark"
-            ],
-            "metadata": {
-                "description": "The type of the HDInsight cluster to create."
-            }
-        },
-        "galleryPackageIdentity": {
-            "type": "string",
-            "metadata": {
-                "description": "H2O is an open source, in-memory, distributed, fast, and scalable machine learning and predictive analytics platform."
-            },
-            "defaultValue": "H2O HDInsight App"
-        },
-        "edgeNodeSize": {
-            "type": "string",
-            "metadata": {
-                "description": "Size of the edge node that hosts the application"
-            },
-            "defaultValue": "Standard_D3",
-            "allowedValues": [
-                "Standard_A1",
-                "Standard_A2",
-                "Standard_A3",
-                "Standard_A4",
-                "Standard_D1",
-                "Standard_D2",
-                "Standard_D3",
-                "Standard_D4"
-            ]
-        },
-        "clusterHeadNodeSize": {
-            "type": "string",
-            "defaultValue": "Standard_D12_v2",
-            "allowedValues": [
-                "Standard_D3_v2",
-                "Standard_D4_v2",
-                "Standard_D5_v2",
-                "Standard_D11_v2",
-                "Standard_D12_v2",
-                "Standard_D13_v2",
-                "Standard_D14_v2",
-                "Standard_D15_v2",
-                "Standard_D3",
-                "Standard_D4",
-                "Standard_D5"
-            ],
-            "metadata": {
-                "description": "The size of the head nodes in the HDInsight Spark cluster."
-            }
-        },
-        "clusterWorkerNodeSize": {
-            "type": "string",
-            "defaultValue": "Standard_D13_v2",
-            "allowedValues": [
-                "Standard_D1_v2",
-                "Standard_D2_v2",
-                "Standard_D3_v2",
-                "Standard_D4_v2",
-                "Standard_D5_v2",
-                "Standard_D12_v2",
-                "Standard_D13_v2",
-                "Standard_D14_v2",
-                "Standard_D15_v2",
-                "Standard_D1",
-                "Standard_D2",
-                "Standard_D3",
-                "Standard_D4",
-                "Standard_D5"
-            ],
-            "metadata": {
-                "description": "The size of the head nodes in the HDInsight Spark cluster."
-            }
-        },
-        "clusterWorkerNodeCount": {
+        "vmCount": {
             "type": "int",
-            "defaultValue": 3,
+            "defaultValue": 1,
             "metadata": {
-                "description": "The number of nodes in the HDInsight cluster."
+                "description": "Number of VMs to deploy"
+            }
+        },        
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Premium_LRS",
+            "allowedValues": [
+                "Premium_LRS"
+            ],
+            "metadata": {
+                "description": "Storage Account type. DS-series VMs must be deployed in Premium_LRS in order to have an SSD OS disk."
             }
         }
         
     },
-        "variables": {
-            "defaultApiVersion": "2015-05-01-preview",
-            "clusterApiVersion": "2015-03-01-preview",
-            "clusterStorageAccountName": "[concat(parameters('clusterName'),'store')]"
-        },
-    "resources": [        
+    "variables": {
+        "vmName": "H2ODSVM",
+        "imagePublisher": "microsoft-ads",
+        "imageOffer": "linux-data-science-vm",
+        "imageSKU": "linuxdsvm",
+        "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'dsvm')]",
+        "availabilitySetName": "H2OdsvmAvSet",
+        "networkSecurityGroupName": "H2OdsvmNSG",
+        "virtualNetworkName": "H2OVNET",
+        "vnetAddressPrefix": "10.0.0.0/16",
+        "publicIPAddressType": "Dynamic",
+        "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+        "subnet1Name": "Subnet-1",
+        "subnet1Prefix": "10.0.0.0/24",
+        "nicName": "NIC",
+        "subnet1Ref": "[concat(variables('vnetID'),'/subnets/', variables('subnet1Name'))]",
+        "customScriptFilePath": "https://h2ostore.blob.core.windows.net/marketplacescripts/H2OVM/install_extras.sh",
+        "customScriptCommandToExecute": "sh install_extras.sh",
+        "vmExtensionName": "H2OdsvmExtension",
+        "domainNameLabel": "[concat('h2odsvm-', uniqueString(resourceGroup().id))]"
+
+    },
+    "resources": [
         {
-            "name": "[concat(parameters('clusterName'),'/', 'h2o-sparklingwater')]",
-            "type": "Microsoft.HDInsight/clusters/applications",
-            "apiVersion": "[variables('clusterApiVersion')]",            
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
             "properties": {
-                "marketPlaceIdentifier": "EmptyNode",
-                "computeProfile": {
-                    "roles": [
-                        {
-                            "name": "edgenode",
-                            "targetInstanceCount": 1,
-                            "hardwareProfile": {
-                                "vmSize": "[parameters('edgeNodeSize')]"
-                            }
-                        }
+                "accountType": "[parameters('storageAccountType')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[variables('availabilitySetName')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {}
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[concat('publicIP', copyIndex())]",
+            "location": "[resourceGroup().location]",
+            "copy": {
+                "name": "pip-loop",
+                "count": "[parameters('vmCount')]"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "[variables('publicIPAddressType')]",
+                "dnsSettings": {
+                    "domainNameLabel": "[concat(variables('domainNameLabel'), '-', copyIndex())]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('vnetAddressPrefix')]"
                     ]
                 },
-                "installScriptActions": [
+                "subnets": [
                     {
-                        "name": "[concat('head-install-v0','-' ,uniquestring('h2o-sparklingwater'))]",
-                        "uri": "https://raw.githubusercontent.com/JHerna17/H2O-Azure-Templates/master/head_node_install.sh",
-                        "parameters": "[concat(parameters('sshUserName'), ' ', parameters('sparkVersion'))]",
-                        "roles": [ "headnode" ]
-                    },
-                    {
-                        "name": "[concat('worker-install-v0','-' ,uniquestring('h2o-sparklingwater'))]",
-                        "uri": "https://raw.githubusercontent.com/pablomarin/SparklingWater-azure-template/master/worker_installs.sh",
-                        "parameters": "",
-                        "roles": [ "workernode" ]
-                    },
-                    {
-                        "name": "[concat('edge-install-v0','-' ,uniquestring('h2o-sparklingwater'))]",
-                        "uri": "https://raw.githubusercontent.com/pablomarin/SparklingWater-azure-template/master/worker_installs.sh",
-                        "parameters": "",
-                        "roles": [ "edgenode" ]
+                        "name": "[variables('subnet1Name')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnet1Prefix')]"
+                        }
                     }
-                ],
-                "uninstallScriptActions": [ ],
-                "httpsEndpoints": [ ],
-                "applicationType": "CustomApplication"
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[concat(variables('networkSecurityGroupName'), copyIndex())]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "copy": {
+                "name": "nsg-loop",
+                "count": "[parameters('vmCount')]"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "H2O",
+                        "properties": {
+                            "priority": 1000,
+                            "sourceAddressPrefix": "*",
+                            "protocol": "Tcp",
+                            "destinationPortRange": "54321",
+                            "access": "Allow",
+                            "direction": "inbound",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*"
+                        }
+                    },
+                    {
+                        "name": "RServer",
+                        "properties": {
+                            "priority": 2000,
+                            "sourceAddressPrefix": "*",
+                            "protocol": "Tcp",
+                            "destinationPortRange": "8787",
+                            "access": "Allow",
+                            "direction": "inbound",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat(variables('nicName'), copyIndex())]",
+            "location": "[resourceGroup().location]",
+            "copy": {
+                "name": "nic-loop",
+                "count": "[parameters('vmCount')]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', 'publicIP', copyIndex())]",
+                "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'), copyIndex())]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[concat('10.0.0.', copyIndex(4))]",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', concat('publicIP', copyIndex()))]"
+                            },
+                            "subnet": {
+                                "id": "[variables('subnet1Ref')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "[concat(variables('vmName'), '-', copyIndex())]",
+            "location": "[resourceGroup().location]",
+            "copy": {
+                "name": "vm-loop",
+                "count": "[parameters('vmCount')]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), copyIndex())]",
+                "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]"
+            ],
+            "plan": {
+                "name": "[variables('imageSKU')]",
+                "publisher": "[variables('imagePublisher')]",
+                "product": "[variables('imageOffer')]"
+            },
+            "properties": {
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[concat(variables('vmName'), '-', copyIndex())]",
+                    "adminUsername": "[parameters('adminUserName')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[variables('imageSKU')]",
+                        "version": "1.3.1"
+                    },
+                    "osDisk": {
+                        "name": "osdisk",
+                        "vhd": {
+                            "uri": "[concat('http://', variables('storageAccountName'), '.blob.core.windows.net/vhds/', uniqueString(resourceGroup().id), '-', variables('vmName'), copyindex(), '.vhd')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex()))]"
+                        }
+                    ]
+                }
+            }
+        },        
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmName'), '-', copyIndex(), '/', variables('vmExtensionName'))]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "copy": {
+                "name": "ext-loop",
+                "count": "[parameters('vmCount')]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-', copyIndex())]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[variables('customScriptFilePath')]"
+                    ],
+                    "commandToExecute": "[concat(variables('customScriptCommandToExecute'), ' ', parameters('vmCount'), ' ', parameters('adminUserName'))]"
+                }
             }
         }
+
     ]
-        
-    }
+}
