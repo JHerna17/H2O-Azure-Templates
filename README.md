@@ -6,7 +6,7 @@ This template can also be extended to create a H2O cluster by setting the the <b
 
 This template will automatically: download the latest stable version of H2O on each node (at */dsvm/tools* folder), installs H2O for R and Python, and run the h2o.jar.
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https://raw.githubusercontent.com/JHerna17/H2O-Azure-Templates/master/azuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FJHerna17%2FH2O-Azure-Templates%2Fmaster%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
